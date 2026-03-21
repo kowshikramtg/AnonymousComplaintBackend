@@ -10,3 +10,6 @@ dist
 .DS_Store
 *.log
 *.lock
+.gitignore
+package-lock.json
+package.json
