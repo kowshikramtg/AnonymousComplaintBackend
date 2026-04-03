@@ -5,15 +5,16 @@ import {
   getComplaints,
   getComplaintById,
   deleteComplaint,
-  updateComplaint,
+  resolveComplaint,
 } from "../controllers/complaintController.js";
+import { checkRole } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.post("/complaint", createComplaint);
-router.get("/complaints", getComplaints);
-router.get("/complaints/:id", getComplaintById);
-router.delete("/complaint/:id", deleteComplaint);
-router.put("/complaint/:id", updateComplaint);
+router.post("/complaints",checkRole("user"), createComplaint);
+router.get("/complaints", checkRole("official"), getComplaints);
+router.get("/complaints/:id", checkRole("official"), getComplaintById);
+router.delete("/complaints/:id", checkRole("official"), deleteComplaint);
+router.patch("/complaints/:id/resolve", checkRole("official"), resolveComplaint);
 
 export default router;
