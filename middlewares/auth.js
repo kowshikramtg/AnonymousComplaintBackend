@@ -1,15 +1,25 @@
-export const checkRole = (requiredRole) => {
+import { verifyToken } from "../utils/jwt.js";
+
+export const authMiddleware = (requiredRole) => {
     return (req, res, next) => {
-        const role = req.headers.role;
+        const authHeader = req.headers.authorization;
 
-        if(!role) {
-            return res.status(401).json({message: "No role provided"});
+        if(!authHeader){
+            return res.status(401).json({ message: "No token provided" });
         }
 
-        if(role !== requiredRole){
-            return res.status(403).json({message: "Access denied"});
-        }
+        const token = authHeader.split(" ")[1];
+        try {
+            const decoded = verifyToken(token);
 
-        next();
+            if(requiredRole && decoded.role !== requiredRole){
+                return res.status(403).json({ message : "Access denied"});
+            }
+            req.user = decoded;
+
+            next();
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid token" });
+        }
     };
 };

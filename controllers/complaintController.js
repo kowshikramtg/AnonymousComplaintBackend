@@ -1,4 +1,6 @@
 import express from "express";
+import { generateToken } from "../utils/jwt.js";
+
 
 let complaints = [];
 
@@ -92,3 +94,22 @@ export const resolveComplaint = (req, res) => {
 
   res.json(complaint);
 };
+
+
+// JWT user assigning token
+export const login = (req, res) => {
+  const { username } = req.body;
+  
+  // TEMP logic
+  let user
+
+  if(username === "admin"){
+    user = { id: 1, role: "offical" };
+  }else{
+    user = { id: 2, role: "user" };
+  }
+
+  const token = generateToken(user);
+
+  res.json({ token });
+}
