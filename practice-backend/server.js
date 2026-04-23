@@ -31,4 +31,10 @@ export default app;
     "priority": "high"
 }
 
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwicm9sZSI6InVzZXIiLCJpYXQiOjE3NzY4NjUzNjQsImV4cCI6MTc3Njg2ODk2NH0.uv5fqhycfosR6py11Xf47sLqMmu47hL7_qNswKRgN_g
+{
+    "title": "Air ",
+    "description": "Air pollution",
+    "pincode": "559999",
+    "category": "air",
+    "priority": "Mild"
+}

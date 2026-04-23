@@ -8,18 +8,29 @@ export const connectDB = async () => {
   });
 
   await db.exec(`
-  CREATE TABLE IF NOT EXISTS issues (
+    CREATE TABLE IF NOT EXISTS issues (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      description TEXT,
+      pincode TEXT,
+      category TEXT,
+      priority TEXT,
+      status TEXT,
+      createdAt TEXT,
+      resolutionNote TEXT,
+      resolvedAt TEXT,
+      assignedTo TEXT,
+      createdBy TEXT,
+      affectedCount INTEGER DEFAULT 1
+    );
+`);
+await db.exec(`
+  CREATE TABLE IF NOT EXISTS issue_votes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    description TEXT,
-    pincode TEXT,
-    category TEXT,
-    priority TEXT,
-    status TEXT,
-    createdAt TEXT,
-    resolutionNote TEXT,
-    resolvedAt TEXT
+    issueId INTEGER,
+    userId TEXT
   );
 `);
+
   return db;
 };

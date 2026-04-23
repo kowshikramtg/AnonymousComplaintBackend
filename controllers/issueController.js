@@ -2,7 +2,6 @@ import express from "express";
 import { generateToken } from "../utils/jwt.js";
 import { db } from "../server.js";
 
-
 // Create issue
 export const createIssue = async (req, res) => {
   const { title, description, pincode, category, priority } = req.body;
@@ -22,8 +21,42 @@ export const createIssue = async (req, res) => {
     return res.status(400).send("Pincode is required");
   }
 
+  // preventing duplicate issue to be reported by same user and counting issue affected count
+  const existing = await db.get(
+    "SELECT * FROM issues WHERE pincode = ? AND category = ? AND status != 'resolved'",
+    [pincode, category],
+  );
+
+  if (existing) {
+    const alreadyVoted = await db.get(
+      "SELECT * FROM issue_votes WHERE issueId = ? AND userId = ?",
+      [existing.id, req.user.id],
+    );
+
+    if (alreadyVoted) {
+      return res.status(400).json({
+        message:
+          "You already marked this issue as affected and it is being addressed",
+      });
+    }
+
+    await db.run("INSERT INTO issue_votes (issueId, userId) VALUES (?, ?)", [
+      existing.id,
+      req.user.id,
+    ]);
+
+    await db.run(
+      "UPDATE issues SET affectedCount = affectedCount + 1 WHERE id = ?",
+      [existing.id],
+    );
+    return res.status(200).json({
+      message: "Issue already exists, you added support",
+      issueID: existing.id,
+    });
+  }
+
   const result = await db.run(
-    `INSERT INTO issues (title, description, pincode, category, priority, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO issues (title, description, pincode, category, priority, status, createdAt, createdBy, affectedCount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       title,
       description,
@@ -31,11 +64,20 @@ export const createIssue = async (req, res) => {
       category,
       priority,
       "pending",
-      new Date().toLocaleString(),
+      new Date().toISOString(),
+      req.user.id,
+      1,
     ],
   );
+  const issueId = result.lastId;
 
-  res.json({ id: result.lastID });
+  // Immediately record creator vote
+  await db.run("INSERT INTO issue_votes (issueId, userId) VALUES (?, ?)", [
+    issueId,
+    req.user.id,
+  ]);
+
+  return res.status(201).json({ message: "Issue created", issueId });
 };
 
 // Read all issues and using filtering
@@ -100,16 +142,23 @@ export const resolveIssue = async (req, res) => {
   const id = parseInt(req.params.id);
   const { note } = req.body;
 
-  if (!note) {
-    return res.status(400).json({ message: "Resolution note required" });
-  }
-
   // const issue = issues.find((c) => c.id === id); // find - to retirve only single or first element that matches the condition
-  
+
   const issue = await db.get("SELECT * FROM issues WHERE id = ?", [id]);
 
   if (!issue) {
     return res.status(404).json({ message: "Not found" });
+  }
+
+  if (issue.assignedTo !== req.user.id) {
+    return res.status(403).json({ message: "Not authorized" });
+  }
+
+  // prevents resolving unassigned issue
+  if (!issue.assignedTo) {
+    return res.status(400).json({
+      message: "Issue not assigned yet",
+    });
   }
 
   if (issue.status === "resolved") {
@@ -118,15 +167,17 @@ export const resolveIssue = async (req, res) => {
     });
   }
 
+  if (!note) {
+    return res.status(400).json({ message: "Resolution note required" });
+  }
+
   await db.run(
     "UPDATE issues SET status = ?, resolutionNote = ?, resolvedAt = ? WHERE id = ?",
-    ["resolved", note, new Date().toISOString(), id]
+    ["resolved", note, new Date().toISOString(), id],
   );
 
   res.json({ message: "Issue resolved" });
 };
-
-
 
 // JWT user assigning token
 export const login = (req, res) => {
@@ -144,4 +195,49 @@ export const login = (req, res) => {
   const token = generateToken(user);
 
   res.json({ token });
+};
+
+// issue assignment
+export const assignIssue = async (req, res) => {
+  const id = parseInt(req.params.id);
+  const officialId = req.user.id;
+
+  if (!officialId) {
+    return res.status(400).json({ message: "Official ID required" });
+  }
+  const issue = await db.get("SELECT * FROM issues WHERE id = ?", [id]);
+
+  if (!issue) {
+    return res.status(404).json({ message: "Issue not found" });
+  }
+
+  if (issue.assignedTo) {
+    return res.status(400).json({
+      message: "Issue already assigned",
+    });
+  }
+
+  await db.run("UPDATE issues SET assignedTo = ? WHERE id = ?", [
+    officialId,
+    id,
+  ]);
+
+  res.json({ message: `Issue assigned to ${officialId}` });
+};
+
+// official dashboard - assigned issues
+export const getAssignedIssues = async (req, res) => {
+  const officialId = String(req.user.id);
+  console.log(req.user);
+
+  const issues = await db.all(
+    "SELECT * FROM issues WHERE assignedTo = ? AND status != 'resolved'",
+    [officialId],
+  );
+
+  if (!issues || issues.length === 0) {
+    return res.status(404).json({ message: "No assigned issues found" });
+  }
+
+  res.json(issues);
 };
