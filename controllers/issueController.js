@@ -98,9 +98,14 @@ export const deleteIssue = async (req, res) => {
 // Update Issue by id
 export const resolveIssue = async (req, res) => {
   const id = parseInt(req.params.id);
+  const { note } = req.body;
+
+  if (!note) {
+    return res.status(400).json({ message: "Resolution note required" });
+  }
 
   // const issue = issues.find((c) => c.id === id); // find - to retirve only single or first element that matches the condition
-
+  
   const issue = await db.get("SELECT * FROM issues WHERE id = ?", [id]);
 
   if (!issue) {
@@ -113,7 +118,10 @@ export const resolveIssue = async (req, res) => {
     });
   }
 
-  await db.run("UPDATE issues SET status = ? WHERE id = ?", ["resolved", id]);
+  await db.run(
+    "UPDATE issues SET status = ?, resolutionNote = ?, resolvedAt = ? WHERE id = ?",
+    ["resolved", note, new Date().toISOString(), id]
+  );
 
   res.json({ message: "Issue resolved" });
 };

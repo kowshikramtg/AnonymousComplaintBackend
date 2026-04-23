@@ -8,16 +8,18 @@ export const connectDB = async () => {
   });
 
   await db.exec(`
-        CREATE TABLE IF NOT EXISTS issues (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        description TEXT,
-        pincode TEXT,
-        category TEXT,
-        priority TEXT,
-        status TEXT,
-        createdAt TEXT
-        )
-    `);
+  CREATE TABLE IF NOT EXISTS issues (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    description TEXT,
+    pincode TEXT,
+    category TEXT,
+    priority TEXT,
+    status TEXT,
+    createdAt TEXT,
+    resolutionNote TEXT,
+    resolvedAt TEXT
+  );
+`);
   return db;
 };
