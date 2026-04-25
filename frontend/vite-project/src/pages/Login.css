@@ -1,0 +1,34 @@
+.login-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--light-gray);
+}
+
+.login-box {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  width: 300px;
+  text-align: center;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 15px 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}

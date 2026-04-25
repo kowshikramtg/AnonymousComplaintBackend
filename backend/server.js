@@ -1,9 +1,10 @@
 import express from "express";
 import issueRoutes from './routes/issueRoutes.js';
 import { connectDB } from './config/db.js';
-
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 
 //middleware to parse JSON bodies
 app.use(express.json());

@@ -1,0 +1,37 @@
+.sidebar {
+  width: 75px;
+  height: 100vh;
+  background: var(--black);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 40px;
+}
+
+.nav span {
+  display: block;
+  margin: 20px 0;
+  font-size: 18px;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.nav span:hover {
+  opacity: 1;
+}
+
+.logout {
+  margin-top: auto;
+  margin-bottom: 20px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}

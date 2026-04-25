@@ -1,0 +1,18 @@
+.stats-card {
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  width: 220px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.stats-card p {
+  font-size: 14px;
+  color: gray;
+}
+
+.stats-card h2 {
+  margin-top: 8px;
+  font-size: 22px;
+  color: var(--accent);
+}
