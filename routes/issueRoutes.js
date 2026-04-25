@@ -9,6 +9,7 @@ import {
   resolveIssue,
   assignIssue,
   getAssignedIssues,
+  getDashboard,
 } from "../controllers/issueController.js";
 import { authMiddleware } from "../middlewares/auth.js";
 
@@ -22,4 +23,5 @@ router.get("/issues/:id", authMiddleware("official"), getIssueById);
 router.delete("/issues/:id", authMiddleware("official"), deleteIssue);
 router.patch("/issues/:id/resolve", authMiddleware("official"), resolveIssue);
 router.patch("/issues/:id/assign", authMiddleware("official"), assignIssue);
+router.get("/dashboard", authMiddleware(), getDashboard);
 export default router;

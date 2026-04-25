@@ -241,3 +241,70 @@ export const getAssignedIssues = async (req, res) => {
 
   res.json(issues);
 };
+
+export const getDashboard = async (req, res) => {
+  try {
+    const { status, priority, pincode, page = 1, limit = 5 } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
+
+    let query = "SELECT * FROM issues WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) as total FROM issues WHERE 1=1";
+
+    const params = [];
+    const countParams = [];
+
+    if (req.user.role !== "official") {
+      query += " AND createdBy = ?";
+      countQuery += " AND createdBy = ?";
+      params.push(req.user.id);
+      countParams.push(req.user.id);
+    }
+
+    if (status) {
+      query += " AND status = ?";
+      countQuery += " AND status = ?";
+      params.push(status);
+      countParams.push(status);
+    }
+
+    if (priority) {
+      query += " AND priority = ?";
+      countQuery += " AND priority = ?";
+      params.push(priority);
+      countParams.push(priority);
+    }
+
+    if (pincode) {
+      query += " AND pincode = ?";
+      countQuery += " AND pincode = ?";
+      params.push(pincode);
+      countParams.push(pincode);
+    }
+
+    query += ` LIMIT ${limitNum} OFFSET ${offset}`;
+
+    const issues = await db.all(query, params);
+    const totalResult = await db.get(countQuery, countParams);
+
+    res.status(200).json({
+      success: true,
+      data: issues,
+      pagination: {
+        total: totalResult.total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(totalResult.total / limitNum),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Error fetching dashboard",
+    });
+  }
+};
